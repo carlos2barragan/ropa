@@ -1,95 +1,53 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
-import { productService, categoryService } from '../services/api';
-import ProductCard from '../components/products/ProductCard';
-import Spinner from '../components/ui/Spinner';
+import { Shirt, Shuffle, BookOpen, ArrowRight } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+
+const features = [
+  { icon: Shirt, title: 'Sube tu ropa', desc: 'Agrega cada prenda con foto, categoría y color. Construye tu armario digital.' },
+  { icon: Shuffle, title: 'Sortea un outfit', desc: 'Un clic y la app combina aleatoriamente tus prendas para crear un look.' },
+  { icon: BookOpen, title: 'Guarda los que te gustan', desc: 'Guarda tus outfits favoritos para volver a ellos cuando quieras.' },
+];
 
 export default function Home() {
-  const [featured, setFeatured] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      productService.getAll({ limit: 8 }),
-      categoryService.getAll(),
-    ]).then(([pRes, cRes]) => {
-      setFeatured(pRes.data.products);
-      setCategories(cRes.data);
-    }).finally(() => setLoading(false));
-  }, []);
+  const { user } = useAuth();
 
   return (
     <div>
-      {/* Hero */}
-      <section className="relative bg-gray-900 text-white min-h-[70vh] flex items-center">
-        <div className="absolute inset-0 overflow-hidden">
-          <img
-            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400"
-            alt="Hero"
-            className="w-full h-full object-cover opacity-40"
-          />
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <p className="text-indigo-400 font-medium mb-4 tracking-widest text-sm uppercase">Nueva Colección 2026</p>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            Viste con<br />
-            <span className="text-indigo-400">estilo propio</span>
-          </h1>
-          <p className="text-gray-300 text-lg mb-8 max-w-md">
-            Descubre nuestra colección de ropa diseñada para cada momento de tu vida.
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+        <p className="text-violet-600 font-semibold text-sm tracking-widest uppercase mb-4">Tu armario, reinventado</p>
+        <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+          Combina tu ropa<br />
+          <span className="text-violet-600">al instante</span>
+        </h1>
+        <p className="text-gray-500 text-xl mb-10 max-w-lg mx-auto">
+          Sube tus prendas, presiona un botón y descubre nuevas combinaciones de tu propio armario.
+        </p>
+        <Link
+          to={user ? '/randomizer' : '/register'}
+          className="inline-flex items-center gap-2 bg-violet-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-violet-700 transition-colors"
+        >
+          {user ? 'Sortear outfit' : 'Empezar gratis'} <ArrowRight size={20} />
+        </Link>
+        {!user && (
+          <p className="mt-4 text-sm text-gray-400">
+            ¿Ya tienes cuenta? <Link to="/login" className="text-violet-600 hover:underline">Inicia sesión</Link>
           </p>
-          <Link
-            to="/products"
-            className="inline-flex items-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-full font-semibold hover:bg-indigo-500 transition-colors text-lg"
-          >
-            Ver Colección <ArrowRight size={20} />
-          </Link>
-        </div>
-      </section>
-
-      {/* Categories */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8">Categorías</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              to={`/products?category=${cat.name}`}
-              className="group bg-gray-50 rounded-xl p-6 text-center hover:bg-indigo-50 hover:border-indigo-200 border border-transparent transition-all"
-            >
-              <p className="font-semibold text-gray-800 group-hover:text-indigo-700 transition-colors">{cat.name}</p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Featured Products */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Destacados</h2>
-          <Link to="/products" className="text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
-            Ver todos <ArrowRight size={16} />
-          </Link>
-        </div>
-        {loading ? (
-          <Spinner />
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {featured.map((p) => <ProductCard key={p.id} product={p} />)}
-          </div>
         )}
       </section>
 
-      {/* Banner */}
-      <section className="bg-indigo-600 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold mb-4">Envío gratis en compras +$150.000</h2>
-          <p className="text-indigo-200 mb-8">A todo el país. Entrega en 3-5 días hábiles.</p>
-          <Link to="/products" className="bg-white text-indigo-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors inline-block">
-            Comprar ahora
-          </Link>
+      <section className="bg-gray-50 py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {features.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="bg-white rounded-2xl p-8 border border-gray-100">
+                <div className="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center mb-5">
+                  <Icon size={24} className="text-violet-600" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </div>
